@@ -74,7 +74,7 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
         public static final ResourceLocation ID = new ResourceLocation(Blahaj.MOD_ID, "yarn_spinning");
 
         @Override
-        public GemPolishingRecipe fromJson(ResourceLocation pRecipeId, JsonObject pSerializedRecipe) {
+        public YarnSpinningRecipe fromJson(ResourceLocation pRecipeId, JsonObject pSerializedRecipe) {
             ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "output"));
 
             ItemStack input = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "input"));
@@ -94,7 +94,7 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf pBuffer, GemPolishingRecipe pRecipe) {
+        public void toNetwork(FriendlyByteBuf pBuffer, YarnSpinningRecipe pRecipe) {
             pBuffer.writeInt(pRecipe.inputItems.size());
 
             for (Ingredient ingredient : pRecipe.getIngredients()) {
