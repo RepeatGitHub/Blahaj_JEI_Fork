@@ -1,5 +1,7 @@
 package com.dogatorix.recipe;
 
+import java.util.function.Supplier;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.minecraft.world.level.Level;
 
