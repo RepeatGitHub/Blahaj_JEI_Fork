@@ -15,12 +15,12 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
-    private final ItemStack input;
+    private final NonNullList<Ingredient> inputItems;
     private final ItemStack output;
     private final ResourceLocation id;
 
-    public YarnSpinningRecipe(ItemStack input, ItemStack output, ResourceLocation id) {
-        this.input = input;
+    public YarnSpinningRecipe(NonNullList<Ingredient> inputItems, ItemStack output, ResourceLocation id) {
+        this.inputItems = inputItems;
         this.output = output;
         this.id = id;
     }
@@ -31,7 +31,7 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
             return false;
         }
 
-        return input.test(pContainer.getItem(0));
+        return inputItems.get(0).test(pContainer.getItem(0));
     }
 
     @Override
@@ -69,17 +69,20 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
         public static final String ID = "yarn_spinning";
     }
 
-	public static class Serializer implements RecipeSerializer<YarnSpinningRecipe> {
+    public static class Serializer implements RecipeSerializer<YarnSpinningRecipe> {
         public static final Serializer INSTANCE = new Serializer();
-        public static final ResourceLocation ID = new ResourceLocation(Blahaj.MOD_ID, "yarn_spinning");
+        public static final ResourceLocation ID = new ResourceLocation(TutorialMod.MOD_ID, "yarn_spinning");
 
         @Override
         public YarnSpinningRecipe fromJson(ResourceLocation pRecipeId, JsonObject pSerializedRecipe) {
             ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "output"));
 
-            ItemStack input = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "input"));
+            JsonArray ingredients = GsonHelper.getAsJsonArray(pSerializedRecipe, "ingredients");
             NonNullList<Ingredient> inputs = NonNullList.withSize(1, Ingredient.EMPTY);
-			inputs.set(0, Ingredient.fromJson(input));
+
+            for(int i = 0; i < inputs.size(); i++) {
+                inputs.set(i, Ingredient.fromJson(ingredients.get(i)));
+            }
 
             return new YarnSpinningRecipe(inputs, output, pRecipeId);
         }
@@ -87,7 +90,10 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
         @Override
         public @Nullable YarnSpinningRecipe fromNetwork(ResourceLocation pRecipeId, FriendlyByteBuf pBuffer) {
             NonNullList<Ingredient> inputs = NonNullList.withSize(pBuffer.readInt(), Ingredient.EMPTY);
-			inputs.set(0, Ingredient.fromNetwork(pBuffer));
+
+            for(int i = 0; i < inputs.size(); i++) {
+                inputs.set(i, Ingredient.fromNetwork(pBuffer));
+            }
 
             ItemStack output = pBuffer.readItem();
             return new YarnSpinningRecipe(inputs, output, pRecipeId);
