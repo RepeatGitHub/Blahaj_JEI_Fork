@@ -137,50 +137,38 @@ public class YarnSpinnerBlockEntity extends BlockEntity implements MenuProvider 
         progress = 0;
     }
 
-    private boolean hasRecipe() {
-        Item[] woolColors = { Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
-                Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL,
-                Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL,
-                Items.BLACK_WOOL };
-        Item[] yarnColors = { ItemInit.WHITE_YARN.get(), ItemInit.ORANGE_YARN.get(), ItemInit.MAGENTA_YARN.get(),
-                ItemInit.LIGHT_BLUE_YARN.get(), ItemInit.YELLOW_YARN.get(), ItemInit.LIME_YARN.get(),
-                ItemInit.PINK_YARN.get(), ItemInit.GRAY_YARN.get(), ItemInit.LIGHT_GRAY_YARN.get(),
-                ItemInit.CYAN_YARN.get(), ItemInit.PURPLE_YARN.get(), ItemInit.BLUE_YARN.get(),
-                ItemInit.BROWN_YARN.get(), ItemInit.GREEN_YARN.get(), ItemInit.RED_YARN.get(),
-                ItemInit.BLACK_YARN.get() };
-        Boolean hasCraftingItem = false;
-        for (int i = 0; i < woolColors.length; i++) {
-            if (this.itemHandler.getStackInSlot(INPUT_SLOT).getItem() == woolColors[i]) {
-                ItemStack result = new ItemStack(yarnColors[i]);
-                if (canInsertAmountIntoOutputSlot(result.getCount()) && canInsertItemIntoOutputSlot(result.getItem())) {
-                    hasCraftingItem = true;
-                    break;
-                }
-            }
-        }
-        return hasCraftingItem;
+    private void craftItem() {
+        Optional<YarnSpinningRecipe> recipe = getCurrentRecipe();
+        ItemStack result = recipe.get().getResultItem(null);
+
+        this.itemHandler.extractItem(INPUT_SLOT, 1, false);
+
+        this.itemHandler.setStackInSlot(OUTPUT_SLOT,
+			new ItemStack(result.getItem(),
+        		this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + result.getCount()
+			)
+		);
     }
 
-    private void craftItem() {
-        Item[] woolColors = { Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
-                Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL,
-                Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL,
-                Items.BLACK_WOOL };
-        Item[] yarnColors = { ItemInit.WHITE_YARN.get(), ItemInit.ORANGE_YARN.get(), ItemInit.MAGENTA_YARN.get(),
-                ItemInit.LIGHT_BLUE_YARN.get(), ItemInit.YELLOW_YARN.get(), ItemInit.LIME_YARN.get(),
-                ItemInit.PINK_YARN.get(), ItemInit.GRAY_YARN.get(), ItemInit.LIGHT_GRAY_YARN.get(),
-                ItemInit.CYAN_YARN.get(), ItemInit.PURPLE_YARN.get(), ItemInit.BLUE_YARN.get(),
-                ItemInit.BROWN_YARN.get(), ItemInit.GREEN_YARN.get(), ItemInit.RED_YARN.get(),
-                ItemInit.BLACK_YARN.get() };
-        for (int i = 0; i < woolColors.length; i++) {
-            if (this.itemHandler.getStackInSlot(INPUT_SLOT).getItem() == woolColors[i]) {
-                ItemStack result = new ItemStack(yarnColors[i]);
-                this.itemHandler.extractItem(INPUT_SLOT, 1, false);
-                this.itemHandler.setStackInSlot(OUTPUT_SLOT, new ItemStack(result.getItem(),
-                        this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + result.getCount()));
-            }
+    private boolean hasRecipe() {
+        Optional<YarnSpinningRecipe> recipe = getCurrentRecipe();
+
+        if(recipe.isEmpty()) {
+            return false;
         }
+        ItemStack result = recipe.get().getResultItem(getLevel().registryAccess());
+
+        return canInsertAmountIntoOutputSlot(result.getCount()) && canInsertItemIntoOutputSlot(result.getItem());
     }
+
+	private Optional<YarnSpinningRecipe> getCurrentRecipe() {
+        SimpleContainer inventory = new SimpleContainer(this.itemHandler.getSlots());
+        for(int i = 0; i < itemHandler.getSlots(); i++) {
+            inventory.setItem(i, this.itemHandler.getStackInSlot(i));
+        }
+
+        return this.level.getRecipeManager().getRecipeFor(YarnSpinningRecipe.Type.INSTANCE, inventory, level);
+	}
 
     private boolean canInsertItemIntoOutputSlot(Item item) {
         return this.itemHandler.getStackInSlot(OUTPUT_SLOT).isEmpty()
