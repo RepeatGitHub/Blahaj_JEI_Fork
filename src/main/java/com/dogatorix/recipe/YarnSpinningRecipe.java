@@ -78,7 +78,7 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
             ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "output"));
 
             ItemStack input = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "input"));
-            NonNullList<Ingredient> inputs = NonNullList.withSize(1, Ingredient.EMPTY);s
+            NonNullList<Ingredient> inputs = NonNullList.withSize(1, Ingredient.EMPTY);
 
             for(int i = 0; i < inputs.size(); i++) {
                 inputs.set(i, Ingredient.fromJson(ingredients.get(i)));
