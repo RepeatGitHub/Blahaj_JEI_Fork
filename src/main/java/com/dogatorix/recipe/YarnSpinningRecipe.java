@@ -14,13 +14,13 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-public class YarnSpinningRecipe  implements Recipe<SimpleContainer> {
-    private final NonNullList<Ingredient> inputItems;
+public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
+    private final ItemStack input;
     private final ItemStack output;
     private final ResourceLocation id;
 
-    public GemPolishingRecipe(NonNullList<Ingredient> inputItems, ItemStack output, ResourceLocation id) {
-        this.inputItems = inputItems;
+    public YarnSpinningRecipe(ItemStack input, ItemStack output, ResourceLocation id) {
+        this.input = input;
         this.output = output;
         this.id = id;
     }
@@ -31,7 +31,7 @@ public class YarnSpinningRecipe  implements Recipe<SimpleContainer> {
             return false;
         }
 
-        return inputItems.get(0).test(pContainer.getItem(0));
+        return input.test(pContainer.getItem(0));
     }
 
     @Override
@@ -69,5 +69,45 @@ public class YarnSpinningRecipe  implements Recipe<SimpleContainer> {
         public static final String ID = "yarn_spinning";
     }
 
-	
+	public static class Serializer implements RecipeSerializer<GemPolishingRecipe> {
+        public static final Serializer INSTANCE = new Serializer();
+        public static final ResourceLocation ID = new ResourceLocation(Blahaj.MOD_ID, "yarn_spinning");
+
+        @Override
+        public GemPolishingRecipe fromJson(ResourceLocation pRecipeId, JsonObject pSerializedRecipe) {
+            ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "output"));
+
+            ItemStack input = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "input"));
+            NonNullList<Ingredient> inputs = NonNullList.withSize(1, Ingredient.EMPTY);s
+
+            for(int i = 0; i < inputs.size(); i++) {
+                inputs.set(i, Ingredient.fromJson(ingredients.get(i)));
+            }
+
+            return new GemPolishingRecipe(inputs, output, pRecipeId);
+        }
+
+        @Override
+        public @Nullable GemPolishingRecipe fromNetwork(ResourceLocation pRecipeId, FriendlyByteBuf pBuffer) {
+            NonNullList<Ingredient> inputs = NonNullList.withSize(pBuffer.readInt(), Ingredient.EMPTY);
+
+            for(int i = 0; i < inputs.size(); i++) {
+                inputs.set(i, Ingredient.fromNetwork(pBuffer));
+            }
+
+            ItemStack output = pBuffer.readItem();
+            return new GemPolishingRecipe(inputs, output, pRecipeId);
+        }
+
+        @Override
+        public void toNetwork(FriendlyByteBuf pBuffer, GemPolishingRecipe pRecipe) {
+            pBuffer.writeInt(pRecipe.inputItems.size());
+
+            for (Ingredient ingredient : pRecipe.getIngredients()) {
+                ingredient.toNetwork(pBuffer);
+            }
+
+            pBuffer.writeItemStack(pRecipe.getResultItem(null), false);
+        }
+    }
 }
