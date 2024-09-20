@@ -1,5 +1,5 @@
 {
     "type": "blahaj:yarn_spinning",
-    "input": "minecraft:white_wool",
-    "output": "blahaj:white_yarn"
+    "ingredient": "minecraft:white_wool",
+    "result": "blahaj:white_yarn"
 }
