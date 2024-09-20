@@ -69,7 +69,7 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
         public static final String ID = "yarn_spinning";
     }
 
-	public static class Serializer implements RecipeSerializer<GemPolishingRecipe> {
+	public static class Serializer implements RecipeSerializer<YarnSpinningRecipe> {
         public static final Serializer INSTANCE = new Serializer();
         public static final ResourceLocation ID = new ResourceLocation(Blahaj.MOD_ID, "yarn_spinning");
 
@@ -79,24 +79,18 @@ public class YarnSpinningRecipe implements Recipe<SimpleContainer> {
 
             ItemStack input = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "input"));
             NonNullList<Ingredient> inputs = NonNullList.withSize(1, Ingredient.EMPTY);
+			inputs.set(0, Ingredient.fromJson(input));
 
-            for(int i = 0; i < inputs.size(); i++) {
-                inputs.set(i, Ingredient.fromJson(ingredients.get(i)));
-            }
-
-            return new GemPolishingRecipe(inputs, output, pRecipeId);
+            return new YarnSpinningRecipe(inputs, output, pRecipeId);
         }
 
         @Override
-        public @Nullable GemPolishingRecipe fromNetwork(ResourceLocation pRecipeId, FriendlyByteBuf pBuffer) {
+        public @Nullable YarnSpinningRecipe fromNetwork(ResourceLocation pRecipeId, FriendlyByteBuf pBuffer) {
             NonNullList<Ingredient> inputs = NonNullList.withSize(pBuffer.readInt(), Ingredient.EMPTY);
-
-            for(int i = 0; i < inputs.size(); i++) {
-                inputs.set(i, Ingredient.fromNetwork(pBuffer));
-            }
+			inputs.set(0, Ingredient.fromNetwork(pBuffer));
 
             ItemStack output = pBuffer.readItem();
-            return new GemPolishingRecipe(inputs, output, pRecipeId);
+            return new YarnSpinningRecipe(inputs, output, pRecipeId);
         }
 
         @Override
